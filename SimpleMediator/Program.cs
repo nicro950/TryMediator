@@ -1,4 +1,5 @@
 ﻿#nullable enable
+
 using System.Collections.Generic;
 
 namespace MediatrTry
@@ -12,11 +13,15 @@ namespace MediatrTry
 
             //TODO: Request Bob
 
-            Helper.PrintResult("Bob", null /*TODO: Insert result object*/);
+            var bobResponse = aMediator.Send(new PersonRequest("Bob"));
+
+            Helper.PrintResult("Bob", bobResponse /*TODO: Insert result object*/);
 
             //TODO: Request Peter
 
-            Helper.PrintResult("Peter", null /*TODO: Insert result object*/);
+            var peterResponse = aMediator.Send(new PersonRequest("Peter"));
+
+            Helper.PrintResult("Peter", peterResponse /*TODO: Insert result object*/);
 
         }
 
@@ -30,6 +35,10 @@ namespace MediatrTry
             amediator.RegisterHandler((PersonRequest x) =>
             {
                 // TODO: Implement handler logic
+                if (allPersons.TryGetValue(x.Name, out Person p))
+                {
+                    return new PersonResponse(p);
+                }
                 return new PersonResponse(null);
             });
         }

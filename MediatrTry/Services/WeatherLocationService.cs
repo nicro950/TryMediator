@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using MediatrTry.Controllers;
 using Microsoft.Extensions.Logging;
 
@@ -11,10 +10,9 @@ namespace MediatrTry.Services
     {
         private static readonly string[] Summaries = new[]
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
-
-        Dictionary<string, (int, int)> places = new Dictionary<string, (int, int)>()
+        readonly Dictionary<string, (int, int)> places = new Dictionary<string, (int, int)>()
         {
             ["Stavanger"] = (-5, 20),
             ["Kristiansand"] = (0, 30),

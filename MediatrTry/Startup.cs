@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using MediatR.Pipeline;
+using MediatrTry.Commands;
+using MediatrTry.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,7 +29,9 @@ namespace MediatrTry
             services.AddControllers();
 
             // TODO: Uncomment this line
-            // services.AddMediatR(typeof(Startup).Assembly);
+            services.AddMediatR(typeof(Startup).Assembly);
+            services.AddSingleton<WeatherLocationService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,4 +54,74 @@ namespace MediatrTry
             });
         }
     }
+
+    public class RequestLogger<TRequest> : IRequestPreProcessor<TRequest>
+    {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public RequestLogger(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
+        public Task Process(TRequest request, CancellationToken cancellationToken)
+        {
+            var logger = _loggerFactory.CreateLogger<TRequest>();
+
+            // Do some logging to record the Request
+            logger.LogWarning("Got object: {obj}", Helper.Dump(request));
+
+            return Task.CompletedTask;
+        }
+    }
+
+    public class ResponseLogger2 : IRequestPostProcessor<WeatherRequest, WeatherResponse>
+    {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public ResponseLogger2(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
+        public Task Process(WeatherRequest request, WeatherResponse response, CancellationToken cancellationToken)
+        {
+            var logger = _loggerFactory.CreateLogger<WeatherRequest>();
+
+            // Do some logging to record the Request
+            logger.LogWarning("Got object: {obj}", string.Join(", ", response.Weather.Select(x => x.Summary)));
+
+            return Task.CompletedTask;
+        }
+    }
+
+    public class ResponseLogger<TRequest, TResponse> : IRequestPostProcessor<TRequest, TResponse>
+    {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public ResponseLogger(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
+        public Task Process(TRequest request, TResponse response, CancellationToken cancellationToken)
+        {
+            var logger = _loggerFactory.CreateLogger<TRequest>();
+
+            // Do some logging to record the Request
+            logger.LogWarning("Got object: {obj}", Helper.Dump(request));
+            logger.LogWarning("With response: {obj}", Helper.Dump(response));
+
+            return Task.CompletedTask;
+        }
+    }
+
+    public static class Helper
+    {
+        public static string Dump(object resposne)
+        {
+            return string.Join(", ", resposne.GetType().GetProperties().Select(x => $"{x.Name}: {x.GetValue(resposne)}"));
+        }
+    }
+
 }
